@@ -1,0 +1,108 @@
+#include<Servo.h>
+Servo myServo;
+
+const int piezo = A0;   //Piezo jiss pin se attach hai
+const int switchPin = 2; //Lock karne wali button
+const int YellowLed = 3; //locked status open
+const int GreenLed = 4; //Knock status
+const int RedLed = 5; //locked status close
+
+int Knockval;
+int switchval;
+
+const int lowknock = 10; //threshold
+const int highknock = 100; //threshold
+
+boolean locked = false;// to indicate if locked or not
+int numberOfKnock = 0; //Initialize
+// Global finish
+
+
+void setup()
+{
+  myServo.attach(9);//Servo attached to pin 9
+
+  pinMode(YellowLed, OUTPUT);
+  pinMode(GreenLed, OUTPUT);
+  pinMode(RedLed, OUTPUT);
+
+  pinMode(switchPin, INPUT); // Switch to close again
+
+  Serial.begin(9600);
+
+  digitalWrite(GreenLed, HIGH);// GREEN on
+
+  myServo.write(0); // initila unlock
+
+  Serial.println("the box is unlock!");// KOI badi baat nai hai
+}
+
+
+void loop()
+{
+  if (locked == false)
+  {
+    switchval = digitalRead(switchPin);// value switch button se
+    if (switchval == HIGH) // 5 volt aa rha hai to
+    {
+      locked = true; //lock hai HODOR
+
+      digitalWrite(GreenLed, LOW);// change status of led
+      digitalWrite(RedLed, HIGH);
+
+      myServo.write(90);// lock position assuming
+
+      Serial.println("Nahi na kholega darwaja!");
+
+      delay(1000);
+    }
+  }
+  if (locked == true)
+  {
+    Knockval = analogRead(piezo); // piezo se value lega
+
+    if (numberOfKnock < 3 && Knockval > 0) // aab tak 3 knock baki hai aur knock value 0 se jyada hai  means koi knock kr rha hai ki nai
+    {
+      if (checkforknock(Knockval) == true) // ye  threshold value ke hiasab se dega...aage function hai iska
+      {
+        numberOfKnock++; // baki ke knick kam ho jaenge
+
+        Serial.print(3 - numberOfKnock);
+        Serial.println("more knocks to go");
+      }
+      if (numberOfKnock == 3) // 3 bar ho gya knock
+      {
+        locked = false; // unlock the door
+
+        myServo.write(0); // unlock position
+
+        delay(1000);
+
+        digitalWrite(GreenLed, HIGH); // lED change kar diye hai
+        digitalWrite(RedLed, LOW);
+
+        Serial.println("Khulja sim sim!"); // Aaiye padhariye
+
+        numberOfKnock = 0; // yaha pai dikkat aai tha
+      }
+    }
+  }
+}
+
+boolean checkforknock(int value) // function dec and def
+{
+  if ( value > lowknock && value < highknock)
+  {
+    digitalWrite(YellowLed, HIGH);
+    delay(500);
+    digitalWrite(YellowLed, LOW);
+
+    Serial.println("Valid knock");
+    return true;
+  }
+  else
+  {
+    Serial.println("Bad knock!");
+    return false;
+  }
+}
