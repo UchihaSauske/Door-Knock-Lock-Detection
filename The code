@@ -1,8 +1,8 @@
 #include<Servo.h>
 Servo myServo;
 
-const int piezo = A0;   //Piezo jiss pin se attach hai
-const int switchPin = 2; //Lock karne wali button
+const int piezo = A0;   //Piezo is attached to this pin
+const int switchPin = 2; //The button to lock the door
 const int YellowLed = 3; //locked status open
 const int GreenLed = 4; //Knock status
 const int RedLed = 5; //locked status close
@@ -34,7 +34,7 @@ void setup()
 
   myServo.write(0); // initila unlock
 
-  Serial.println("the box is unlock!");// KOI badi baat nai hai
+  Serial.println("the box is unlock!");
 }
 
 
@@ -42,8 +42,8 @@ void loop()
 {
   if (locked == false)
   {
-    switchval = digitalRead(switchPin);// value switch button se
-    if (switchval == HIGH) // 5 volt aa rha hai to
+    switchval = digitalRead(switchPin);// Take value from switch button
+    if (switchval == HIGH) // If HIGH is received
     {
       locked = true; //lock hai HODOR
 
@@ -52,25 +52,25 @@ void loop()
 
       myServo.write(90);// lock position assuming
 
-      Serial.println("Nahi na kholega darwaja!");
+      Serial.println("Sorry! Door will stay closed");
 
       delay(1000);
     }
   }
   if (locked == true)
   {
-    Knockval = analogRead(piezo); // piezo se value lega
+    Knockval = analogRead(piezo); // Read value from piezo
 
-    if (numberOfKnock < 3 && Knockval > 0) // aab tak 3 knock baki hai aur knock value 0 se jyada hai  means koi knock kr rha hai ki nai
+    if (numberOfKnock < 3 && Knockval > 0) // The knock value is valid and the number of knock is counted
     {
-      if (checkforknock(Knockval) == true) // ye  threshold value ke hiasab se dega...aage function hai iska
+      if (checkforknock(Knockval) == true) // Function to check the knock to be valid
       {
-        numberOfKnock++; // baki ke knick kam ho jaenge
+        numberOfKnock++; 
 
         Serial.print(3 - numberOfKnock);
         Serial.println("more knocks to go");
       }
-      if (numberOfKnock == 3) // 3 bar ho gya knock
+      if (numberOfKnock == 3) // If knock value is valid and number of knock is 3
       {
         locked = false; // unlock the door
 
@@ -78,12 +78,13 @@ void loop()
 
         delay(1000);
 
-        digitalWrite(GreenLed, HIGH); // lED change kar diye hai
+        digitalWrite(GreenLed, HIGH); // Change LED colour
         digitalWrite(RedLed, LOW);
 
-        Serial.println("Khulja sim sim!"); // Aaiye padhariye
+        Serial.println("WELCOME!"); // Door is opened
 
-        numberOfKnock = 0; // yaha pai dikkat aai tha
+        numberOfKnock = 0; // To make the initial count of knock back to zero
+                           // This is important as if we don't do this the door will remain unlock forever
       }
     }
   }
